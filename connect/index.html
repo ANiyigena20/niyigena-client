@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connect — Niyigena Client</title>
+<meta name="theme-color" content="#070b14">
+<link rel="icon" href="../icon.png">
+<link rel="apple-touch-icon" href="../icon.png">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 20px; background: radial-gradient(900px 500px at 20% -10%, #12254a 0%, transparent 60%), #070b14; color: #e8eefc; font: 16px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+  .card { width: 100%; max-width: 420px; background: #0e1626; border: 1px solid #1f2b44; border-radius: 20px; padding: 28px 24px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .brand img { width: 40px; height: 40px; }
+  .brand b { display: block; font-size: 18px; } .brand span { color: #60a5fa; font-size: 11px; font-weight: 700; letter-spacing: .14em; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  p { color: #8a9bbd; margin: 0 0 18px; font-size: 15px; }
+  input { width: 100%; height: 58px; border-radius: 14px; border: 1px solid #2a3a5a; background: #0a1120; color: #fff; text-align: center; font: 700 28px/1 Consolas, ui-monospace, monospace; letter-spacing: .2em; text-transform: uppercase; }
+  input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.25); }
+  button { width: 100%; height: 52px; margin-top: 14px; border: 0; border-radius: 14px; background: #3b82f6; color: #fff; font: 600 17px/1 inherit; font-family: inherit; cursor: pointer; }
+  #msg { min-height: 22px; margin-top: 12px; font-size: 14px; color: #fca5a5; text-align: center; }
+  .tip { margin-top: 18px; padding-top: 16px; border-top: 1px solid #1f2b44; font-size: 13.5px; color: #8a9bbd; }
+  .tip b { color: #e8eefc; }
+  a { color: #60a5fa; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand"><img src="../icon.png" alt=""><div><b>Niyigena</b><span>CLIENT</span></div></div>
+    <h1>Open your cameras</h1>
+    <p>Type the 6-character connection code from your Niyigena server (Configuration → Phone &amp; Remote Access).</p>
+    <form id="f">
+      <input id="code" maxlength="7" placeholder="ABC-123" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text">
+      <button>Connect</button>
+    </form>
+    <div id="msg"></div>
+    <div class="tip"><b>Away from the building?</b> Switch on the free <b>Tailscale</b> app on your phone first (same account as the server). Then use the "From anywhere" code.<br><br>After you sign in, tap <b>Share → Add to Home Screen</b> to keep it like an app.<br><br><a href="../">← Download Niyigena Client for Windows</a></div>
+  </div>
+<script>
+  // Same decoder as the app (server/conncode.js): 6 characters = private IPv4 address of the server.
+  var ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var RANGES = [[0, 100, 64, 6], [1, 10, 0, 8], [2, 192, 168, 0], [3, 172, 16, 4]];
+  function check(type, payload) { var x = (payload ^ (type << 24)) >>> 0, c = 0; while (x) { c ^= x & 15; x >>>= 4; } return (c * 7 + 3 + type) & 15; }
+  function decode(text) {
+    var s = String(text || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (s.length !== 6) return null;
+    var n = 0;
+    for (var i = 0; i < 6; i++) { var v = ALPHABET.indexOf(s[i]); if (v < 0) return null; n = n * 32 + v; }
+    var type = Math.floor(n / Math.pow(2, 28)), payload = Math.floor(n / 16) % Math.pow(2, 24);
+    if (n % 16 !== check(type, payload)) return null;
+    var r = RANGES.filter(function (x) { return x[0] === type; })[0];
+    if (r[3] && payload >= Math.pow(2, 16 + r[3])) return null;
+    return [r[1], r[3] ? r[2] + (payload >> 16) : r[2], (payload >> 8) & 255, payload & 255].join('.');
+  }
+  var input = document.getElementById('code'), msg = document.getElementById('msg');
+  try { var last = localStorage.getItem('niyigena.code'); if (last) input.value = last; } catch (e) {}
+  input.addEventListener('input', function () {
+    var s = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    input.value = s.length > 3 ? s.slice(0, 3) + '-' + s.slice(3) : s;
+    msg.textContent = '';
+  });
+  document.getElementById('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var ip = decode(input.value);
+    if (!ip) { msg.textContent = 'That code isn’t right. Check it on the server and try again.'; return; }
+    try { localStorage.setItem('niyigena.code', input.value); } catch (e2) {}
+    msg.style.color = '#86efac'; msg.textContent = 'Opening your cameras…';
+    location.href = 'http://' + ip + ':7780/';
+  });
+</script>
+</body>
+</html>
