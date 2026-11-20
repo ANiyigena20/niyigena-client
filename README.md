@@ -1,4 +1,4 @@
-﻿# The Niyigena's Client
+# Niyigena Client
 
 Security camera software for Windows — live view, playback, motion alerts and phone access.
 
