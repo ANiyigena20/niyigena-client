@@ -2,41 +2,75 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Connect — Niyigena Client</title>
-<meta name="theme-color" content="#070b14">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Servers — Niyigena Client</title>
+<meta name="theme-color" content="#0b1324">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Niyigena">
 <link rel="icon" href="../icon.png">
 <link rel="apple-touch-icon" href="../icon.png">
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 20px; background: radial-gradient(900px 500px at 20% -10%, #12254a 0%, transparent 60%), #070b14; color: #e8eefc; font: 16px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
-  .card { width: 100%; max-width: 420px; background: #0e1626; border: 1px solid #1f2b44; border-radius: 20px; padding: 28px 24px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
-  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-  .brand img { width: 40px; height: 40px; }
-  .brand b { display: block; font-size: 18px; } .brand span { color: #60a5fa; font-size: 11px; font-weight: 700; letter-spacing: .14em; }
-  h1 { font-size: 22px; margin: 0 0 6px; }
-  p { color: #8a9bbd; margin: 0 0 18px; font-size: 15px; }
-  input { width: 100%; height: 58px; border-radius: 14px; border: 1px solid #2a3a5a; background: #0a1120; color: #fff; text-align: center; font: 700 28px/1 Consolas, ui-monospace, monospace; letter-spacing: .2em; text-transform: uppercase; }
-  input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.25); }
-  button { width: 100%; height: 52px; margin-top: 14px; border: 0; border-radius: 14px; background: #3b82f6; color: #fff; font: 600 17px/1 inherit; font-family: inherit; cursor: pointer; }
-  #msg { min-height: 22px; margin-top: 12px; font-size: 14px; color: #fca5a5; text-align: center; }
-  .tip { margin-top: 18px; padding-top: 16px; border-top: 1px solid #1f2b44; font-size: 13.5px; color: #8a9bbd; }
+  html, body { margin: 0; min-height: 100%; }
+  body { background: #070b14; color: #e8eefc; font: 16px/1.45 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+  header { position: sticky; top: 0; z-index: 2; background: linear-gradient(180deg, #13306a, #0d2148); padding: env(safe-area-inset-top) 16px 0; }
+  .bar { display: flex; align-items: center; gap: 10px; height: 58px; }
+  .bar img { width: 30px; height: 30px; }
+  .bar h1 { flex: 1; font-size: 19px; margin: 0; text-align: center; padding-right: 40px; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 12px 14px 120px; }
+  .filter { width: 100%; height: 46px; border-radius: 12px; border: 1px solid #2a3a5a; background: #0a1120; color: #fff; padding: 0 14px; font: inherit; }
+  .count { color: #8a9bbd; font-size: 14px; margin: 12px 2px; }
+  .server { display: flex; align-items: center; gap: 14px; background: #0e1626; border: 1px solid #1f2b44; border-radius: 14px; padding: 14px; margin-bottom: 10px; cursor: pointer; }
+  .server:active { background: #131d31; }
+  .server .ic { width: 44px; height: 44px; border-radius: 11px; background: rgba(59,130,246,.15); display: grid; place-items: center; flex: none; }
+  .server .ic svg { width: 24px; height: 24px; stroke: #60a5fa; fill: none; stroke-width: 1.8; }
+  .server .t { flex: 1; min-width: 0; }
+  .server .n { font-weight: 600; font-size: 16.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .server .a { color: #8a9bbd; font-size: 13px; font-family: Consolas, ui-monospace, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .server .open { color: #60a5fa; font-size: 13.5px; }
+  .server .x { background: none; border: 0; color: #5d6d8e; font-size: 22px; padding: 6px 8px; cursor: pointer; }
+  .empty { text-align: center; color: #8a9bbd; padding: 46px 20px; }
+  .empty b { color: #e8eefc; }
+  .fab { position: fixed; right: 22px; bottom: calc(24px + env(safe-area-inset-bottom)); width: 62px; height: 62px; border-radius: 50%; border: 0; background: #3b82f6; color: #fff; font-size: 34px; line-height: 1; box-shadow: 0 10px 30px rgba(59,130,246,.45); cursor: pointer; }
+  .sheet { position: fixed; inset: 0; background: rgba(2,5,12,.7); display: none; align-items: flex-end; justify-content: center; z-index: 5; }
+  .sheet.on { display: flex; }
+  .panel { width: 100%; max-width: 520px; background: #0e1626; border: 1px solid #1f2b44; border-radius: 20px 20px 0 0; padding: 22px 18px calc(22px + env(safe-area-inset-bottom)); }
+  .panel h2 { margin: 0 0 4px; font-size: 20px; }
+  .panel p { color: #8a9bbd; margin: 0 0 14px; font-size: 14.5px; }
+  .panel label { display: block; font-size: 13px; color: #8a9bbd; margin: 12px 0 6px; }
+  .panel input { width: 100%; height: 54px; border-radius: 12px; border: 1px solid #2a3a5a; background: #0a1120; color: #fff; padding: 0 14px; font: inherit; }
+  .panel input.code { text-align: center; font: 700 26px/1 Consolas, ui-monospace, monospace; letter-spacing: .18em; text-transform: uppercase; }
+  .panel input:focus { outline: none; border-color: #3b82f6; }
+  .row { display: flex; gap: 10px; margin-top: 16px; }
+  .row button { flex: 1; height: 50px; border-radius: 12px; border: 1px solid #2a3a5a; background: #131d31; color: #e8eefc; font: 600 16px/1 inherit; font-family: inherit; }
+  .row button.primary { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+  #err { color: #fca5a5; font-size: 14px; min-height: 20px; margin-top: 10px; }
+  .tip { color: #8a9bbd; font-size: 13.5px; margin-top: 18px; border-top: 1px solid #1f2b44; padding-top: 14px; }
   .tip b { color: #e8eefc; }
   a { color: #60a5fa; }
 </style>
 </head>
 <body>
-  <div class="card">
-    <div class="brand"><img src="../icon.png" alt=""><div><b>Niyigena</b><span>CLIENT</span></div></div>
-    <h1>Open your cameras</h1>
-    <p>Type the 6-character connection code from your Niyigena server (Configuration → Phone &amp; Remote Access).</p>
-    <form id="f">
-      <input id="code" maxlength="7" placeholder="ABC-123" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text">
-      <button>Connect</button>
-    </form>
-    <div id="msg"></div>
-    <div class="tip"><b>Away from the building?</b> Switch on the free <b>Tailscale</b> app on your phone first (same account as the server). Then use the "From anywhere" code.<br><br>After you sign in, tap <b>Share → Add to Home Screen</b> to keep it like an app.<br><br><a href="../">← Download Niyigena Client for Windows</a></div>
+  <header><div class="bar"><img src="../icon.png" alt=""><h1>Servers</h1></div></header>
+  <div class="wrap">
+    <input class="filter" id="filter" type="search" placeholder="Filter">
+    <div class="count" id="count"></div>
+    <div id="list"></div>
+    <div class="tip"><b>Away from the building?</b> Switch on the free <b>Tailscale</b> app on this phone first, then tap the server.<br><br>Tip: tap <b>Share → Add to Home Screen</b> on this page to keep your server list like an app. <a href="../">Download Niyigena Client for Windows</a></div>
   </div>
+  <button class="fab" id="addBtn" aria-label="Add server">+</button>
+
+  <div class="sheet" id="sheet"><div class="panel">
+    <h2>Add server</h2>
+    <p>Type the 6-character connection code from the server (Configuration → Phone &amp; Remote Access), or its address.</p>
+    <label for="code">Connection code or address</label>
+    <input id="code" class="code" maxlength="60" placeholder="ABC-123" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <label for="name">Name (optional)</label>
+    <input id="name" maxlength="40" placeholder="e.g. Plaza, Home, Taco shop">
+    <div id="err"></div>
+    <div class="row"><button id="cancel">Cancel</button><button class="primary" id="save">Add</button></div>
+  </div></div>
+
 <script>
   // Same decoder as the app (server/conncode.js): 6 characters = private IPv4 address of the server.
   var ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -53,21 +87,65 @@
     if (r[3] && payload >= Math.pow(2, 16 + r[3])) return null;
     return [r[1], r[3] ? r[2] + (payload >> 16) : r[2], (payload >> 8) & 255, payload & 255].join('.');
   }
-  var input = document.getElementById('code'), msg = document.getElementById('msg');
-  try { var last = localStorage.getItem('niyigena.code'); if (last) input.value = last; } catch (e) {}
-  input.addEventListener('input', function () {
-    var s = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-    input.value = s.length > 3 ? s.slice(0, 3) + '-' + s.slice(3) : s;
-    msg.textContent = '';
+  // A code, or an address like "cameras.example.com:7780", "10.1.11.20", "https://x.ts.net:7443".
+  function resolve(input) {
+    var s = String(input || '').trim();
+    var ip = decode(s);
+    if (ip) return { url: 'http://' + ip + ':7780', code: s.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^(...)/, '$1-') };
+    if (!s || /\s/.test(s) || s.indexOf('.') < 0) return null;
+    var u = /^https?:\/\//i.test(s) ? s : ((/\.ts\.net/i.test(s) || /:7443\b/.test(s) ? 'https://' : 'http://') + s);
+    try { var x = new URL(u); if (!x.port && x.protocol === 'http:') x.port = '7780'; return { url: x.origin }; } catch (e) { return null; }
+  }
+
+  var KEY = 'niyigena.servers';
+  function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } }
+  function store(list) { try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {} }
+  // Bring over a code saved by the previous version of this page.
+  (function migrate() { try { var old = localStorage.getItem('niyigena.code'); if (old && !load().length) { var r = resolve(old); if (r) store([{ name: 'My server', url: r.url, code: r.code }]); } localStorage.removeItem('niyigena.code'); } catch (e) {} })();
+
+  var esc = function (s) { return String(s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var icon = '<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="8" rx="2"/><rect x="2" y="13" width="20" height="8" rx="2"/><path d="M6 7h.01M6 17h.01"/></svg>';
+
+  function draw() {
+    var list = load(), f = document.getElementById('filter').value.trim().toLowerCase();
+    var shown = list.filter(function (s) { return !f || (s.name + ' ' + s.url).toLowerCase().indexOf(f) >= 0; });
+    document.getElementById('count').textContent = 'Displaying ' + shown.length + ' server' + (shown.length === 1 ? '' : 's') + '.';
+    document.getElementById('list').innerHTML = shown.length ? shown.map(function (s) {
+      var i = list.indexOf(s);
+      return '<div class="server" data-i="' + i + '"><div class="ic">' + icon + '</div><div class="t"><div class="n">' + esc(s.name || 'Niyigena server') + '</div><div class="a">' + esc(s.code ? s.code + ' · ' : '') + esc(s.url.replace(/^https?:\/\//, '')) + '</div><div class="open">Tap to open</div></div><button class="x" data-del="' + i + '" aria-label="Remove">×</button></div>';
+    }).join('') : '<div class="empty"><b>No servers yet.</b><br>Tap <b>+</b> to add your first server with its connection code.</div>';
+  }
+
+  document.getElementById('list').addEventListener('click', function (e) {
+    var del = e.target.closest('[data-del]');
+    var list = load();
+    if (del) { var s = list[+del.dataset.del]; if (confirm('Remove ' + (s.name || 'this server') + ' from this phone?')) { list.splice(+del.dataset.del, 1); store(list); draw(); } return; }
+    var row = e.target.closest('[data-i]');
+    if (row) location.href = list[+row.dataset.i].url + '/';
   });
-  document.getElementById('f').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var ip = decode(input.value);
-    if (!ip) { msg.textContent = 'That code isn’t right. Check it on the server and try again.'; return; }
-    try { localStorage.setItem('niyigena.code', input.value); } catch (e2) {}
-    msg.style.color = '#86efac'; msg.textContent = 'Opening your cameras…';
-    location.href = 'http://' + ip + ':7780/';
+  document.getElementById('filter').addEventListener('input', draw);
+
+  var sheet = document.getElementById('sheet'), code = document.getElementById('code'), nameInput = document.getElementById('name'), err = document.getElementById('err');
+  function openSheet() { code.value = ''; nameInput.value = ''; code.classList.add('code'); err.textContent = ''; sheet.classList.add('on'); setTimeout(function () { code.focus(); }, 50); }
+  document.getElementById('addBtn').onclick = openSheet;
+  document.getElementById('cancel').onclick = function () { sheet.classList.remove('on'); };
+  code.addEventListener('input', function () {
+    var raw = code.value;
+    var looksLikeCode = /^[A-Za-z0-9-\s]{0,7}$/.test(raw) && raw.indexOf('.') < 0;
+    code.classList.toggle('code', looksLikeCode);
+    if (looksLikeCode) { var s = raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); code.value = s.length > 3 ? s.slice(0, 3) + '-' + s.slice(3) : s; }
+    err.textContent = '';
   });
+  document.getElementById('save').onclick = function () {
+    var r = resolve(code.value);
+    if (!r) { err.textContent = 'That code or address isn’t right. Check it on the server and try again.'; return; }
+    var list = load();
+    if (list.some(function (s) { return s.url === r.url; })) { err.textContent = 'That server is already in your list.'; return; }
+    list.push({ name: nameInput.value.trim(), url: r.url, code: r.code || '' });
+    store(list); sheet.classList.remove('on'); draw();
+  };
+  draw();
+  if (!load().length) openSheet();
 </script>
 </body>
 </html>
